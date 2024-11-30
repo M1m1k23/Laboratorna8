@@ -17,7 +17,7 @@ public class Customer {
         this.account = account;
     }
 
-    // Використовується тільки для створення компаній
+    // For creating companies with discount
     public Customer(String name, String email, Account account, double companyOverdraftDiscount) {
         this.name = name;
         this.email = email;
@@ -26,16 +26,9 @@ public class Customer {
         this.companyOverdraftDiscount = companyOverdraftDiscount;
     }
 
-    public void withdraw(double sum, String currency) {
-        if (!account.getCurrency().equals(currency)) {
-            throw new RuntimeException("Can't extract withdraw " + currency);
-        }
-
-        boolean isCompany = customerType == CustomerType.COMPANY;
-        account.withdraw(sum, isCompany, companyOverdraftDiscount);
+    public void withdraw(double amount, String currency) {
+        account.withdraw(amount, currency, customerType, companyOverdraftDiscount);
     }
-
-    // Гетери, сетери та методи друку інформації про клієнта
 
     public String getName() {
         return name;
@@ -62,14 +55,14 @@ public class Customer {
     }
 
     public String printCustomerDaysOverdrawn() {
-        return name + " " + surname + " Account: IBAN: " + account.getIban() + ", Days Overdrawn: " + account.getDaysOverdrawn();
+        return String.format("%s %s Account: IBAN: %s, Days Overdrawn: %d", name, surname, account.getIban(), account.getDaysOverdrawn());
     }
 
     public String printCustomerMoney() {
-        return name + " " + surname + " Account: IBAN: " + account.getIban() + ", Money: " + account.getMoney();
+        return String.format("%s %s Account: IBAN: %s, Money: %.2f", name, surname, account.getIban(), account.getMoney());
     }
 
     public String printCustomerAccount() {
-        return "Account: IBAN: " + account.getIban() + ", Money: " + account.getMoney() + ", Account type: " + account.getType();
+        return String.format("Account: IBAN: %s, Money: %.2f, Account type: %s", account.getIban(), account.getMoney(), account.getType());
     }
 }

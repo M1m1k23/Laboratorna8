@@ -13,12 +13,11 @@ public class Account {
     private Customer customer;
 
     public Account(AccountType type, int daysOverdrawn) {
-        super();
         this.type = type;
         this.daysOverdrawn = daysOverdrawn;
     }
 
-    public double bankcharge() {
+    public double bankCharge() {
         double result = 4.5;
         result += overdraftCharge();
         return result;
@@ -27,43 +26,47 @@ public class Account {
     private double overdraftCharge() {
         if (type.isPremium()) {
             double result = 10;
-            if (daysOverdrawn > 7)
+            if (daysOverdrawn > 7) {
                 result += (daysOverdrawn - 7) * 1.0;
+            }
             return result;
         } else {
             return daysOverdrawn * 1.75;
         }
     }
 
-    public double overdraftFee() {
-        return type.isPremium() ? 0.10 : 0.20;
-    }
+    public void withdraw(double amount, String currency, CustomerType customerType, double discount) {
+        if (!this.currency.equals(currency)) {
+            throw new RuntimeException("Cannot withdraw in " + currency + " from account with currency " + this.currency);
+        }
 
-    public void withdraw(double sum, boolean isCompany, double discount) {
-        if (isInOverdraft()) {
-            applyOverdraftFee(sum, isCompany, discount);
+        if (type.isPremium()) {
+            handlePremiumAccountWithdrawal(amount, customerType, discount);
         } else {
-            applySimpleWithdrawal(sum);
+            handleNormalAccountWithdrawal(amount, customerType, discount);
         }
     }
 
-    private boolean isInOverdraft() {
-        return money < 0;
-    }
-
-    private void applyOverdraftFee(double sum, boolean isCompany, double discount) {
-        double overdraftFee = sum * overdraftFee();
-        if (isCompany) {
-            overdraftFee *= discount;
+    private void handlePremiumAccountWithdrawal(double amount, CustomerType customerType, double discount) {
+        if (money < 0) {
+            money -= amount + calculateOverdraftFee(amount, customerType, discount / 2);
+        } else {
+            money -= amount;
         }
-        money -= (sum + overdraftFee);
     }
 
-    private void applySimpleWithdrawal(double sum) {
-        money -= sum;
+    private void handleNormalAccountWithdrawal(double amount, CustomerType customerType, double discount) {
+        if (money < 0) {
+            money -= amount + calculateOverdraftFee(amount, customerType, discount);
+        } else {
+            money -= amount;
+        }
     }
 
-    // Гетери та сетери
+    private double calculateOverdraftFee(double amount, CustomerType customerType, double discount) {
+        double feeRate = type.isPremium() ? 0.10 : 0.20;
+        return amount * feeRate * (customerType == CustomerType.COMPANY ? discount : 1);
+    }
 
     public int getDaysOverdrawn() {
         return daysOverdrawn;
@@ -95,10 +98,6 @@ public class Account {
 
     public AccountType getType() {
         return type;
-    }
-
-    public String printCustomer() {
-        return customer.getName() + " " + customer.getEmail();
     }
 
     public String getCurrency() {
