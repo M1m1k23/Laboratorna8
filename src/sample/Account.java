@@ -5,14 +5,14 @@ import sample.Customer;
 
 public class Account {
 
-    private AccountType accountType;
+    private AccountTypeBehavior accountTypeBehavior;
     private double money;
     private String iban;
     private String currency;
     private Customer customer;
 
-    public Account(AccountType accountType, double money) {
-        this.accountType = accountType;
+    public Account(AccountTypeBehavior accountTypeBehavior, double money) {
+        this.accountTypeBehavior = accountTypeBehavior;
         this.money = money;
     }
 
@@ -53,7 +53,7 @@ public class Account {
             throw new IllegalArgumentException("Withdrawal amount must be positive");
         }
 
-        double availableMoney = money + (accountType.isPremium() ? 0.75 : 0.0);
+        double availableMoney = accountTypeBehavior.applyOverdraft(money);
         if (availableMoney < amount) {
             throw new IllegalArgumentException("Insufficient funds");
         }
@@ -63,6 +63,58 @@ public class Account {
     }
 
     public boolean isOverdraftAllowed() {
-        return accountType.isPremium() || money >= 0;
+        return accountTypeBehavior.isPremium() || money >= 0;
+    }
+
+    public double bankcharge() {
+        if (accountTypeBehavior.isPremium()) {
+            return 14.5;
+        } else {
+            return 10.0;
+        }
+    }
+    public String printCustomer() {
+        if (customer != null) {
+            return customer.printCustomer();
+        } else {
+            return "No customer associated with this account";
+        }
+    }
+
+    public double overdraftFee() {
+        if (accountTypeBehavior.isPremium()) {
+            return 0.10;
+        } else {
+            return 0.20;
+        }
+    }
+
+    public interface AccountTypeBehavior {
+        boolean isPremium();
+        double applyOverdraft(double money);
+    }
+
+    public static class NormalAccountType implements AccountTypeBehavior {
+        @Override
+        public boolean isPremium() {
+            return false;
+        }
+
+        @Override
+        public double applyOverdraft(double money) {
+            return money;
+        }
+    }
+
+    public static class PremiumAccountType implements AccountTypeBehavior {
+        @Override
+        public boolean isPremium() {
+            return true;
+        }
+
+        @Override
+        public double applyOverdraft(double money) {
+            return money - 0.25;
+        }
     }
 }

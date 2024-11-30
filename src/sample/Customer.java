@@ -15,10 +15,9 @@ public class Customer {
         this.customerType = customerType;
         this.account = account;
     }
-
-    public Customer(String company, String mail, CustomerType customerType, Account account) {
+    public String printCustomer() {
+        return firstName + " " + lastName + " - " + email;
     }
-
     public boolean withdraw(double amount) {
         return account.withdraw(amount);
     }
@@ -40,3 +39,4 @@ public class Customer {
         return account.getCustomer().isPremium();
     }
 }
+
