@@ -18,7 +18,6 @@ public class Account {
         this.daysOverdrawn = daysOverdrawn;
     }
 
-
     public double bankcharge() {
         double result = 4.5;
         result += overdraftCharge();
@@ -28,20 +27,43 @@ public class Account {
     private double overdraftCharge() {
         if (type.isPremium()) {
             double result = 10;
-            if (getDaysOverdrawn() > 7)
-                result += (getDaysOverdrawn() - 7) * 1.0;
+            if (daysOverdrawn > 7)
+                result += (daysOverdrawn - 7) * 1.0;
             return result;
-        } else
-            return getDaysOverdrawn() * 1.75;
+        } else {
+            return daysOverdrawn * 1.75;
+        }
     }
 
     public double overdraftFee() {
-        if (type.isPremium()) {
-            return 0.10;
+        return type.isPremium() ? 0.10 : 0.20;
+    }
+
+    public void withdraw(double sum, boolean isCompany, double discount) {
+        if (isInOverdraft()) {
+            applyOverdraftFee(sum, isCompany, discount);
         } else {
-            return 0.20;
+            applySimpleWithdrawal(sum);
         }
     }
+
+    private boolean isInOverdraft() {
+        return money < 0;
+    }
+
+    private void applyOverdraftFee(double sum, boolean isCompany, double discount) {
+        double overdraftFee = sum * overdraftFee();
+        if (isCompany) {
+            overdraftFee *= discount;
+        }
+        money -= (sum + overdraftFee);
+    }
+
+    private void applySimpleWithdrawal(double sum) {
+        money -= sum;
+    }
+
+    // Гетери та сетери
 
     public int getDaysOverdrawn() {
         return daysOverdrawn;
@@ -71,16 +93,13 @@ public class Account {
         this.customer = customer;
     }
 
-
     public AccountType getType() {
         return type;
     }
 
-
     public String printCustomer() {
         return customer.getName() + " " + customer.getEmail();
     }
-
 
     public String getCurrency() {
         return currency;

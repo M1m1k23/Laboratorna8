@@ -9,7 +9,6 @@ public class Customer {
     private Account account;
     private double companyOverdraftDiscount = 1;
 
-
     public Customer(String name, String surname, String email, CustomerType customerType, Account account) {
         this.name = name;
         this.surname = surname;
@@ -18,7 +17,7 @@ public class Customer {
         this.account = account;
     }
 
-    // use only to create companies
+    // Використовується тільки для створення компаній
     public Customer(String name, String email, Account account, double companyOverdraftDiscount) {
         this.name = name;
         this.email = email;
@@ -31,51 +30,12 @@ public class Customer {
         if (!account.getCurrency().equals(currency)) {
             throw new RuntimeException("Can't extract withdraw " + currency);
         }
-        if (account.getType().isPremium()) {
-            switch (customerType) {
-                case COMPANY:
-                    // we are in overdraft
-                    if (account.getMoney() < 0) {
-                        // 50 percent discount for overdraft for premium account
-                        account.setMoney((account.getMoney() - sum) - sum * account.overdraftFee() * companyOverdraftDiscount / 2);
-                    } else {
-                        account.setMoney(account.getMoney() - sum);
-                    }
-                    break;
-                case PERSON:
 
-                    // we are in overdraft
-                    if (account.getMoney() < 0) {
-                        account.setMoney((account.getMoney() - sum) - sum * account.overdraftFee());
-                    } else {
-                        account.setMoney(account.getMoney() - sum);
-                    }
-                    break;
-            }
-
-        } else {
-
-            switch (customerType) {
-                case COMPANY:
-                    // we are in overdraft
-                    if (account.getMoney() < 0) {
-                        // no discount for overdraft for not premium account
-                        account.setMoney((account.getMoney() - sum) - sum * account.overdraftFee() * companyOverdraftDiscount);
-                    } else {
-                        account.setMoney(account.getMoney() - sum);
-                    }
-                    break;
-                case PERSON:
-                    // we are in overdraft
-                    if (account.getMoney() < 0) {
-                        account.setMoney((account.getMoney() - sum) - sum * account.overdraftFee());
-                    } else {
-                        account.setMoney(account.getMoney() - sum);
-                    }
-                    break;
-            }
-        }
+        boolean isCompany = customerType == CustomerType.COMPANY;
+        account.withdraw(sum, isCompany, companyOverdraftDiscount);
     }
+
+    // Гетери, сетери та методи друку інформації про клієнта
 
     public String getName() {
         return name;
@@ -102,20 +62,14 @@ public class Customer {
     }
 
     public String printCustomerDaysOverdrawn() {
-        String fullName = name + " " + surname + " ";
-        String accountDescription = "Account: IBAN: " + account.getIban() + ", Days Overdrawn: " + account.getDaysOverdrawn();
-        return fullName + accountDescription;
+        return name + " " + surname + " Account: IBAN: " + account.getIban() + ", Days Overdrawn: " + account.getDaysOverdrawn();
     }
 
     public String printCustomerMoney() {
-        String fullName = name + " " + surname + " ";
-        String accountDescription = "";
-        accountDescription += "Account: IBAN: " + account.getIban() + ", Money: " + account.getMoney();
-        return fullName + accountDescription;
+        return name + " " + surname + " Account: IBAN: " + account.getIban() + ", Money: " + account.getMoney();
     }
 
     public String printCustomerAccount() {
-        return "Account: IBAN: " + account.getIban() + ", Money: "
-                + account.getMoney() + ", Account type: " + account.getType();
+        return "Account: IBAN: " + account.getIban() + ", Money: " + account.getMoney() + ", Account type: " + account.getType();
     }
 }
